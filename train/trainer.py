@@ -4,7 +4,7 @@ import torch.utils.data
 
 from .constants import TRAIN_ITERS, TRAIN_BATCH_SIZE
 
-def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset):
+def train(model: torch.nn.Sequential, dataset: torch.utils.data.Dataset):
   criterion = torch.nn.BCELoss()
   optimizer = torch.optim.Adam(model.parameters())
   dataloader = torch.utils.data.DataLoader(dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
