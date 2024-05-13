@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
 from data.preprocessing import CustomDataset
 from torch.utils.data import DataLoader, TensorDataset
 from torchvision import transforms
@@ -23,7 +24,7 @@ def main():
   custom_dataset = CustomDataset(data_folder, data_set, transform=transform)
 
   # Create a DataLoader to load the data in batches
-  batch_size = 128
+  batch_size = 16
   data_loader = DataLoader(custom_dataset, batch_size=batch_size, shuffle=True)
 
   # Iterate over the data loader to access batches of preprocessed images
@@ -51,13 +52,13 @@ def main():
     # Optionally, break the loop after processing a few batches
     if batch_idx == 4:
         # using batch 5 as dev set (0 indexing)
-        dev_x = batch[0].float().requires_grad_(True)
-        dev_y = batch[1].float().requires_grad_(True)
+        dev_x = batch[0].to(torch.float32).requires_grad_(True)
+        dev_y = batch[1].to(torch.float32).requires_grad_(True)
         break
 
   dev_data = TensorDataset(dev_x, dev_y)
   train(model(in_channel=3, channel_1=32, channel_2=64, channel_3=64, 
-              channel_4=32, img_size=256, num_classes=2), 
+              channel_4=32, img_size=256, num_classes=1), 
         dev_data)
 
 if __name__ == '__main__':

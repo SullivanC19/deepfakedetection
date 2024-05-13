@@ -11,20 +11,16 @@ def model(in_channel, channel_1, channel_2, channel_3, channel_4, img_size, num_
            nn.Conv2d(in_channel, channel_1, 5, padding=2, padding_mode='zeros', bias=True),
            nn.BatchNorm2d(channel_1),
            nn.ReLU(),
-           nn.Dropout(0.75),
            nn.Conv2d(channel_1, channel_2, 7, padding=3, padding_mode='zeros', bias=True),
            nn.BatchNorm2d(channel_2),
            nn.ReLU(),
-           nn.Dropout(0.75),
            nn.Conv2d(channel_2, channel_3, 7, padding=3, padding_mode='zeros', bias=True),
            nn.BatchNorm2d(channel_3),
            nn.ReLU(),
-           nn.Dropout(0.5),
            nn.Conv2d(channel_3, channel_4, 5, padding=2, padding_mode='zeros', bias=True),
            nn.BatchNorm2d(channel_4),
            nn.ReLU(),
-           nn.Dropout(0.5),
            Flatten(),
            nn.Linear(channel_4*img_size*img_size, num_classes),
-           nn.Softmax(dim=0)
+           nn.Sigmoid()
         )
