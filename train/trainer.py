@@ -5,7 +5,7 @@ import torch.utils.data
 from .constants import TRAIN_ITERS, TRAIN_BATCH_SIZE
 
 def train(model: torch.nn.Sequential, dataset: torch.utils.data.Dataset):
-  criterion = torch.nn.BCELoss()
+  criterion = torch.nn.CrossEntropyLoss()
   optimizer = torch.optim.Adam(model.parameters())
   dataloader = torch.utils.data.DataLoader(dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
 
@@ -14,8 +14,8 @@ def train(model: torch.nn.Sequential, dataset: torch.utils.data.Dataset):
     for _, data in enumerate(dataloader):
       x, y = data
       y_pred = torch.argmax(model(x), dim=1)
-      loss = criterion(y_pred.float(), y.float())
+      loss = criterion(y_pred, y)
       optimizer.zero_grad()
-      # loss.backward()
+      loss.backward()
       optimizer.step()
       print(f"Loss: {loss.item()}")

@@ -51,8 +51,8 @@ def main():
     # Optionally, break the loop after processing a few batches
     if batch_idx == 4:
         # using batch 5 as dev set (0 indexing)
-        dev_x = batch[0]
-        dev_y = batch[1]
+        dev_x = batch[0].float().requires_grad_(True)
+        dev_y = batch[1].float().requires_grad_(True)
         break
 
   dev_data = TensorDataset(dev_x, dev_y)
