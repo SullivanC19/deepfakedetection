@@ -1,0 +1,21 @@
+import torch
+import torch.utils
+import torch.utils.data
+
+from .constants import TRAIN_ITERS, TRAIN_BATCH_SIZE
+
+def train(model: torch.nn.Module, dataset: torch.utils.data.Dataset):
+  criterion = torch.nn.BCELoss()
+  optimizer = torch.optim.Adam(model.parameters())
+  dataloader = torch.utils.data.DataLoader(dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
+
+  for epoch in range(TRAIN_ITERS):
+    print(f"Epoch {epoch + 1}/{TRAIN_ITERS}")
+    for _, data in enumerate(dataloader):
+      x, y = data
+      y_pred = model(x)
+      loss = criterion(y_pred, y)
+      optimizer.zero_grad()
+      loss.backward()
+      optimizer.step()
+      print(f"Loss: {loss.item()}")
