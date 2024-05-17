@@ -1,10 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
+
 import torch
 from data.preprocessing import CustomDataset
 from torch.utils.data import DataLoader, TensorDataset
 from torchvision import transforms
-from models.cnn import model
+from models.cnn import cnn_model
 from train.trainer import train
 
 
@@ -24,7 +25,7 @@ def main():
   custom_dataset = CustomDataset(data_folder, data_set, transform=transform)
 
   # Create a DataLoader to load the data in batches
-  batch_size = 16
+  batch_size = 64
   data_loader = DataLoader(custom_dataset, batch_size=batch_size, shuffle=True)
 
   # Iterate over the data loader to access batches of preprocessed images
@@ -57,9 +58,22 @@ def main():
         break
 
   dev_data = TensorDataset(dev_x, dev_y)
-  train(model(in_channel=3, channel_1=32, channel_2=64, channel_3=64, 
-              channel_4=32, img_size=256, num_classes=1), 
-        dev_data)
+  
+  losses, accuracies = train(cnn_model(in_channel=3, channel_1=32, channel_2=64, channel_3=64, 
+              channel_4=32, img_size=256, num_classes=1), dev_data)
+  
+  plt.title("Training loss")
+  plt.plot(losses)
+  plt.xlabel("Iteration")
+  plt.grid(linestyle='--', linewidth=0.5)
+  plt.show()
+
+  plt.title("Training accuracy")
+  plt.plot(np.arange(1, len(accuracies)+1), accuracies)
+  plt.xlabel("Epoch")
+  plt.grid(linestyle='--', linewidth=0.5)
+  plt.show()
+
 
 if __name__ == '__main__':
   main()

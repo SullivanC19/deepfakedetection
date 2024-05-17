@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 
 class Flatten(nn.Module):
@@ -6,7 +5,7 @@ class Flatten(nn.Module):
         N = x.shape[0] # read in N, C, H, W
         return x.view(N, -1)  # "flatten" the C * H * W values into a single vector per image
 
-def model(in_channel, channel_1, channel_2, channel_3, channel_4, img_size, num_classes):
+def cnn_model(in_channel, channel_1, channel_2, channel_3, channel_4, img_size, num_classes):
     return nn.Sequential(
            nn.Conv2d(in_channel, channel_1, 5, padding=2, padding_mode='zeros', bias=True),
            nn.BatchNorm2d(channel_1),
