@@ -6,8 +6,7 @@ from data.preprocessing import CustomDataset
 from torch.utils.data import DataLoader, TensorDataset
 from torchvision import transforms
 from models.cnn import cnn_model
-from train.trainer import train
-
+from train.trainer import train, base_svm
 
 def main():
   # Define the path to your data csv 
@@ -52,13 +51,17 @@ def main():
     
     # Optionally, break the loop after processing a few batches
     if batch_idx == 4:
-        # using batch 5 as dev set (0 indexing)
-        dev_x = batch[0].to(torch.float32).requires_grad_(True)
-        dev_y = batch[1].to(torch.float32).requires_grad_(True)
-        break
+      # using batch 5 as dev set (0 indexing)
+      bdev_x = batch[0].detach().numpy()
+      bdev_x = bdev_x.reshape((bdev_x.shape[0], bdev_x.shape[1]*bdev_x.shape[2]*bdev_x.shape[3]))
+      bdev_y = batch[1].detach().numpy()
+      dev_x = batch[0].to(torch.float32).requires_grad_(True)
+      dev_y = batch[1].to(torch.float32).requires_grad_(True)
+      break
 
   dev_data = TensorDataset(dev_x, dev_y)
   
+  b_acc = base_svm(bdev_x, bdev_y)
   losses, accuracies = train(cnn_model(in_channel=3, channel_1=32, channel_2=64, channel_3=64, 
               channel_4=32, img_size=256, num_classes=1), dev_data)
   
@@ -69,9 +72,10 @@ def main():
   plt.show()
 
   plt.title("Training accuracy")
-  plt.plot(np.arange(1, len(accuracies)+1), accuracies)
+  plt.plot(np.arange(1, len(accuracies)+1), b_acc*np.ones(len(accuracies)), '--', label='baseline')
+  plt.plot(np.arange(1, len(accuracies)+1), accuracies, label='CNN')
   plt.xlabel("Epoch")
-  plt.grid(linestyle='--', linewidth=0.5)
+  plt.grid(True)
   plt.show()
 
 

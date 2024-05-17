@@ -2,6 +2,7 @@ import torch
 import torch.utils
 import torch.utils.data
 import numpy as np
+from sklearn import svm, metrics
 
 from .constants import TRAIN_ITERS, TRAIN_BATCH_SIZE
 
@@ -39,3 +40,9 @@ def train(model: torch.nn.Sequential, dataset: torch.utils.data.Dataset):
       num_batches += 1
     accuracies.append(acc/num_batches)
   return losses, accuracies
+
+def base_svm(x, y):
+  baseline = svm.SVC()
+  baseline.fit(x, y)
+  y_pred = baseline.predict(x)
+  return metrics.accuracy_score(y, y_pred)
