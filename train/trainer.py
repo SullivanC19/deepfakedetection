@@ -28,9 +28,9 @@ def train(model: torch.nn.Sequential, dataset: torch.utils.data.Dataset):
     num_batches = 0
     for _, data in enumerate(dataloader):
       x, y = data
-      y_pred = model(x)
-      acc += get_acc(y_pred, y.reshape(-1, 1))
-      loss = criterion(y_pred, y.reshape(-1, 1))
+      y_pred = model(x.to(torch.float32).requires_grad_(True))
+      acc += get_acc(y_pred, y.to(torch.float32).requires_grad_(True).reshape(-1, 1))
+      loss = criterion(y_pred, y.to(torch.float32).requires_grad_(True).reshape(-1, 1))
       loss.backward()
       optimizer.step()
       optimizer.zero_grad()
