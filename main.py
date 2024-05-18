@@ -73,14 +73,12 @@ def main():
   plt.plot(b_losses)
   plt.xlabel("Iteration")
   plt.grid(linestyle='--', linewidth=0.5)
-  plt.legend(loc='best')
   plt.show()
 
   plt.title("CNN Training loss")
   plt.plot(losses)
   plt.xlabel("Iteration")
   plt.grid(linestyle='--', linewidth=0.5)
-  plt.legend(loc='best')
   plt.show()
 
   plt.title("Training accuracy")
