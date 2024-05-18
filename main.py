@@ -7,11 +7,14 @@ from data.preprocessing import CustomDataset
 from torchvision import transforms
 from models.cnn import cnn_model
 from train.trainer import train_cnn, test_cnn, train_svm, test_svm
+from sklearn.linear_model import SGDClassifier
 
 def main():
   # Define the path to your data csv 
   data_folder = './140k-real-and-fake-faces'
-  data_set = 'dev_train.csv'
+  train_dataset = 'dev_train.csv'
+  val_dataset = 'dev_valid.csv'
+  test_dataset = 'dev_test.csv'
 
   # Define the transformations to apply to the images
   transform = transforms.Compose([
@@ -21,7 +24,9 @@ def main():
   ])
 
   # Create an instance of your custom dataset
-  custom_dataset = CustomDataset(data_folder, data_set, transform=transform)
+  train_data = CustomDataset(data_folder, train_dataset, transform=transform)
+  val_data = CustomDataset(data_folder, val_dataset, transform=transform)
+  test_data = CustomDataset(data_folder, test_dataset, transform=transform)
 
   # Create a DataLoader to load the data in batches
   # batch_size = 1005
@@ -57,30 +62,39 @@ def main():
   # dev_data = TensorDataset(dev_x, dev_y)
 
   print('Starting baseline')
-  b_losses, b_accuracies = train_svm(custom_dataset)
+  svm =  SGDClassifier(max_iter=1000, tol=1e-3)
+  b_losses, bt_accs, bv_accs = train_svm(svm, train_data, val_data)
   print('Starting training')
   channel_dims = [3, 256, 128, 64, 32, 1]
   model = cnn_model(channel_dims, 2)
-  losses, accuracies = train_cnn(model, custom_dataset)
+  losses, t_accs, v_accs = train_cnn(model, train_data, val_data)
   
-  plt.title("Training loss")
-  plt.plot(b_losses, label='SVM')
-  plt.plot(losses, label='CNN')
+  plt.title("SVM Training loss")
+  plt.plot(b_losses)
+  plt.xlabel("Iteration")
+  plt.grid(linestyle='--', linewidth=0.5)
+  plt.legend(loc='best')
+  plt.show()
+
+  plt.title("CNN Training loss")
+  plt.plot(losses)
   plt.xlabel("Iteration")
   plt.grid(linestyle='--', linewidth=0.5)
   plt.legend(loc='best')
   plt.show()
 
   plt.title("Training accuracy")
-  plt.plot(np.arange(1, len(accuracies)+1), b_accuracies, label='SVM')
-  plt.plot(np.arange(1, len(accuracies)+1), accuracies, label='CNN')
+  plt.plot(np.arange(1, len(bt_accs)+1), bt_accs, label='SVM train')
+  plt.plot(np.arange(1, len(bv_accs)+1), bv_accs, label='SVM val')
+  plt.plot(np.arange(1, len(t_accs)+1), t_accs, label='CNN train')
+  plt.plot(np.arange(1, len(v_accs)+1), v_accs, label='CNN val')
   plt.xlabel("Epoch")
   plt.grid(linestyle='--', linewidth=0.5)
   plt.legend(loc='best')
   plt.show()
 
-  print(f'Baseline SVM validation accuracy: {test_svm(custom_dataset)}')
-  print(f'Baseline SVM validation accuracy: {test_cnn(model, custom_dataset)}')
+  print(f'Baseline SVM test accuracy: {test_svm(svm, test_data)}')
+  print(f'Shallow CNN accuracy: {test_cnn(model, test_data)}')
 
 if __name__ == '__main__':
   main()
