@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # import torch
-from data.preprocessing import CustomDataset
+from data.dataset import CustomDataset
 # from torch.utils.data import DataLoader
 from torchvision import transforms
 from models.cnn import cnn_model
