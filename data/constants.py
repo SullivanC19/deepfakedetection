@@ -8,6 +8,8 @@ URL_DATA = 'https://www.kaggle.com/datasets/xhlulu/140k-real-and-fake-faces'
 LABEL_FAKE = 0
 LABEL_REAL = 1
 
+IMAGE_SIZE = 128
+
 DATA_TYPES = ['train', 'test', 'val']
 
 def get_data_info_file(data_type: str, data_info_dir: List[str]=DIR_DATA_INFO) -> str:

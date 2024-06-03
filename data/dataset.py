@@ -6,6 +6,7 @@ from PIL import Image
 import torchvision.transforms.functional
 
 from load_data import load_data_info
+from constants import IMAGE_SIZE
 
 class FaceImageDataset(torch.utils.data.Dataset):
 
@@ -19,7 +20,7 @@ class FaceImageDataset(torch.utils.data.Dataset):
         torchvision.transforms.RandomHorizontalFlip(),
         torchvision.transforms.RandomRotation(180),
         torchvision.transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
-        torchvision.transforms.RandomResizedCrop(128, scale=(0.8, 1.0)),
+        torchvision.transforms.RandomResizedCrop(IMAGE_SIZE, scale=(0.8, 1.0)),
     ])
 
     def __init__(self, data_type: str, do_augment: bool=False, do_fft: bool=False):
