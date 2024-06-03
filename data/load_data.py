@@ -2,21 +2,15 @@ import pandas as pd
 import os
 import opendatasets as od
 
-from .constants import DIR_DATA_TRAIN, FAKE_DIR, REAL_DIR
+from .constants import URL_DATA, get_data_info_file, DIR_DATA
 
-
-def load_train_data():
-  real_images = os.listdir(os.path.join(DIR_DATA_TRAIN, REAL_DIR))
-  fake_images = os.listdir(os.path.join(DIR_DATA_TRAIN, FAKE_DIR))
-
-  return pd.DataFrame({
-    'image': real_images + fake_images,
-    'label': ['real'] * len(real_images) + ['fake'] * len(fake_images)
-  })
+def load_data_info(data_type):
+  data_info = pd.read_csv(get_data_info_file(data_type))
+  data_info['image'] = data_info['path'].apply(lambda path: os.path.join(DIR_DATA, path))
+  return data_info[['image', 'label']]
 
 def download_data():
-  dataset = "https://www.kaggle.com/datasets/xhlulu/140k-real-and-fake-faces"
-  od.download(dataset)
+  od.download(URL_DATA, force=True)
 
 if __name__ == '__main__':
   download_data()
