@@ -1,10 +1,6 @@
 import torch.nn as nn
 from data.constants import IMAGE_SIZE
-
-class Flatten(nn.Module):
-    def forward(self, x):
-        N = x.shape[0]
-        return x.view(N, -1)
+from utils import Flatten
 
 def cnn_model() -> nn.Module:
     return nn.Sequential(
