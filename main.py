@@ -13,7 +13,7 @@ from models.lcn import lcn_model
 
 def main():
   model = lin_model()
-  mean, std = compute_mean_and_std(FaceImageDataset('valid'))
+  mean, std = compute_mean_and_std(FaceImageDataset('train'))
   print(f'Mean:\n{mean}\n\nStd:\n{std}')
   criterion = nn.BCELoss()
   train_data = FaceImageDataset('train', mean=mean, std=std)
