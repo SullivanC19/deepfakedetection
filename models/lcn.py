@@ -6,6 +6,7 @@ def lcn_model():
     model.fc = nn.Sequential(
         nn.Linear(model.fc.in_features, 512),
         nn.ReLU(),
-        nn.Linear(512, 1)
+        nn.Linear(512, 1),
+        nn.Sigmoid(),
     )
     return model
