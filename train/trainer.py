@@ -10,6 +10,7 @@ def train_model(model: nn.Module, train_data: dt.Dataset, val_data: dt.Dataset, 
   writer = SummaryWriter(log_dir=LOG_DIR)
   optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
   dataloader = dt.DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
+  lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.2)
 
   model.train()
   for epoch in range(TRAIN_EPOCHS):
@@ -31,7 +32,9 @@ def train_model(model: nn.Module, train_data: dt.Dataset, val_data: dt.Dataset, 
         val_acc = test_model(model, val_data)
         writer.add_scalar("val-acc", val_acc, global_step=i)
 
-      writer.flush()
+    lr_scheduler.step()
+    writer.flush()
+    
 
 def test_model(model: nn.Module, dataset: dt.Dataset):
   model.eval()
