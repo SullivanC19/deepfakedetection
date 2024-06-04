@@ -1,97 +1,48 @@
 import torch
-import torch.utils
-import torch.utils.data
-import numpy as np
-from sklearn import metrics
-from sklearn.linear_model import SGDClassifier
+import torch.nn as nn
+import torch.utils.data as dt
+from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
-from .constants import TRAIN_ITERS, TRAIN_BATCH_SIZE
+from .constants import TRAIN_EPOCHS, BATCH_SIZE, LOG_DIR, ITERS_PER_VALIDATION
 
-def get_acc(y_pred, y):
-  acc = 0
-  y_pred = np.array([0 if pred < 0.5 else 1 for pred in y_pred])
-  for i in range(len(y_pred)):
-    if (y[i] == 0 and y_pred[i] == 0) or (y[i] == 1 and y_pred[i] == 1):
-      acc += 1
-  return acc
-
-def train_cnn(model: torch.nn.Sequential, train_data: torch.utils.data.Dataset, val_data: torch.utils.data.Dataset):
-  criterion = torch.nn.BCELoss()
+def train_model(model: nn.Module, train_data: dt.Dataset, val_data: dt.Dataset, criterion: nn.Module):
+  writer = SummaryWriter(log_dir=LOG_DIR)
   optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-  dataloader = torch.utils.data.DataLoader(train_data, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
-  losses = []
-  train_accs = []
-  val_accs = []
+  dataloader = dt.DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
 
-  for epoch in range(TRAIN_ITERS):
-    print(f"Epoch {epoch + 1}/{TRAIN_ITERS}")
-    acc = 0
-    num_samples = 0
-    for _, data in enumerate(dataloader):
+  model.train()
+  for epoch in range(TRAIN_EPOCHS):
+    print(f"Epoch {epoch + 1}/{TRAIN_EPOCHS}")
+    for i, data in tqdm(list(enumerate(dataloader))):
+      optimizer.zero_grad()
       x, y = data
-      y_pred = model(x.to(torch.float32).requires_grad_(True))
-      acc += get_acc(y_pred, y.to(torch.float32).requires_grad_(True).reshape(-1, 1))
-      loss = criterion(y_pred, y.to(torch.float32).requires_grad_(True).reshape(-1, 1))
+      scores = model(x)
+      y_pred = scores > 0.5
+      acc = torch.count_nonzero(y_pred == y) / len(y_pred)
+      loss = criterion(y_pred, y)
       loss.backward()
       optimizer.step()
-      optimizer.zero_grad()
-      losses.append(loss.item())
-      print(f"Loss: {loss.item()}")
-      print(f"Accuracy: {get_acc(y_pred, y.reshape(-1, 1))/len(y_pred)}")
-      num_samples += len(y_pred)
-    train_accs.append(acc/num_samples)
-    val_accs.append(test_cnn(model, val_data))
-  print(f"Final train accuracy: {train_accs[-1]}")
-  print(f"Final validation accuracy: {val_accs[-1]}")
-  return losses, train_accs, val_accs
 
-def test_cnn(model: torch.nn.Sequential, dataset: torch.utils.data.Dataset):
-  dataloader = torch.utils.data.DataLoader(dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
-  acc = 0
-  num_samples = 0
-  for _, data in enumerate(dataloader):
-    x, y = data
-    y_pred = model(x.to(torch.float32).requires_grad_(True))
-    acc += get_acc(y_pred, y.to(torch.float32).requires_grad_(True).reshape(-1, 1))
-    num_samples += len(y_pred)
-  return acc/num_samples
+      writer.add_scalar("loss", loss.item(), global_step=i)
+      writer.add_scalar("train-acc", acc, global_step=i)
 
-def train_svm(svm:SGDClassifier, train_data: torch.utils.data.Dataset, val_data: torch.utils.data.Dataset):
-  dataloader = torch.utils.data.DataLoader(train_data, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
-  losses = []
-  train_accs = []
-  val_accs = []
+      if i % ITERS_PER_VALIDATION == 0:
+        val_acc = test_model(model, val_data)
+        writer.add_scalar("val-acc", val_acc, global_step=i)
 
-  for epoch in range(TRAIN_ITERS):
-    print(f"Epoch {epoch + 1}/{TRAIN_ITERS}")
+      writer.flush()
+
+def test_model(model: nn.Module, dataset: dt.Dataset):
+  model.eval()
+  dataloader = dt.DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False)
+  with torch.no_grad():
     acc = 0
     num_samples = 0
-    for _, data in enumerate(dataloader):
-      x, y = data
-      x = x.detach().numpy().reshape((x.shape[0], x.shape[1]*x.shape[2]*x.shape[3]))
-      y = y.detach().numpy()
-      svm.partial_fit(x, y, np.unique(y))
-      y_pred = svm.predict(x)
-      acc += metrics.accuracy_score(y, y_pred)*len(y_pred)
-      losses.append(metrics.hinge_loss(y, y_pred))
-      print(f"Loss: {metrics.hinge_loss(y, y_pred)}")
-      print(f"Accuracy: {metrics.accuracy_score(y, y_pred)}")
-      num_samples += len(y_pred)
-    train_accs.append(acc/num_samples)
-    val_accs.append(test_svm(svm, val_data))
-  print(f"Final train accuracy: {train_accs[-1]}")
-  print(f"Final validation accuracy: {val_accs[-1]}")
-  return losses, train_accs, val_accs
-
-def test_svm(svm:SGDClassifier, dataset: torch.utils.data.Dataset):
-  dataloader = torch.utils.data.DataLoader(dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
-  acc = 0
-  num_samples = 0
-  for _, data in enumerate(dataloader):
-    x, y = data
-    x = x.detach().numpy().reshape((x.shape[0], x.shape[1]*x.shape[2]*x.shape[3]))
-    y = y.detach().numpy()
-    y_pred = svm.predict(x)
-    acc += metrics.accuracy_score(y, y_pred)*len(y_pred)
-    num_samples += len(y_pred)
-  return acc/num_samples
+    for (x, y) in dataloader:
+      scores = model(x)
+      y_pred = scores > 0.5
+      acc += torch.count_nonzero(y_pred == y) / len(y_pred)
+      num_samples += len(x)
+  model.train()
+  return acc / num_samples
