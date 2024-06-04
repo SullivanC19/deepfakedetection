@@ -9,4 +9,5 @@ rm "Miniconda3.sh"
 conda update -y -n base -c conda-forge conda
 conda env create -y -f environment.yml
 source activate deepfakesonly
+tensorboard --logdir=logs --port=6006 &
 python main.py

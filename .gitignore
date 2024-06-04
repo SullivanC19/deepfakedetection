@@ -6,3 +6,5 @@
 
 logs/**
 saved_models/*
+
+analyze.py
