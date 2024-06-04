@@ -11,8 +11,6 @@ from .load_data import load_data_info
 from .constants import IMAGE_SIZE
 
 def compute_mean_and_std(dataset):
-    inds = torch.randperm(len(dataset))[:640]
-    dataset = dt.Subset(dataset, inds)
     loader = dt.DataLoader(dataset, batch_size=64, shuffle=False)
     mean = 0.0
     std = 0.0

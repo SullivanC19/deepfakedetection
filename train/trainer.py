@@ -14,7 +14,7 @@ def train_model(model_name: str, model: nn.Module, train_data: dt.Dataset, val_d
   os.makedirs(SAVED_MODELS_DIR, exist_ok=True)
   
   writer = SummaryWriter(log_dir=log_dir)
-  optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+  optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
   dataloader = dt.DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
   lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.2)
 
