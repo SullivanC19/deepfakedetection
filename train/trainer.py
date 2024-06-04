@@ -25,6 +25,8 @@ def train_model(model_name: str, model: nn.Module, train_data: dt.Dataset, val_d
   dataloader = dt.DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=8) # increase num workers
   lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.2)
 
+  last_val_acc = 0
+  val_acc_decreasing_counter = 0
   global_step = 0
   model.train()
   for epoch in range(TRAIN_EPOCHS):
@@ -47,10 +49,18 @@ def train_model(model_name: str, model: nn.Module, train_data: dt.Dataset, val_d
       global_step += 1
 
     val_acc = test_model(model, val_data)
-    writer.add_scalar("acc/val", val_acc, global_step=global_step)
+    if val_acc < last_val_acc:
+      val_acc_decreasing_counter += 1
+    else:
+      val_acc_decreasing_counter = 0
 
+    writer.add_scalar("acc/val", val_acc, global_step=global_step)
     lr_scheduler.step()
     writer.flush()
+
+    if val_acc_decreasing_counter >= 3:
+      print("Stopping early due to decreasing validation accuracy")
+      break
 
   torch.save(model.state_dict(), model_save_path)   
   writer.close() 
