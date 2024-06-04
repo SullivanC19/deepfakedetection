@@ -5,7 +5,14 @@ import torch.utils.data as dt
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from .constants import TRAIN_EPOCHS, BATCH_SIZE, SAVED_MODELS_DIR, get_timestamp, get_saved_model_path, get_log_dir
+from .constants import (
+  TRAIN_EPOCHS,
+  BATCH_SIZE,
+  SAVED_MODELS_DIR,
+  get_timestamp,
+  get_saved_model_path,
+  get_log_dir,
+)
 
 def train_model(model_name: str, model: nn.Module, train_data: dt.Dataset, val_data: dt.Dataset, criterion: nn.Module):
   timestamp = get_timestamp()
@@ -34,13 +41,13 @@ def train_model(model_name: str, model: nn.Module, train_data: dt.Dataset, val_d
       loss.backward()
       optimizer.step()
 
-      writer.add_scalar(f"{model_name}/loss", loss.item(), global_step=global_step)
-      writer.add_scalar(f"{model_name}/train_acc", acc, global_step=global_step)
+      writer.add_scalar("loss", loss.item(), global_step=global_step)
+      writer.add_scalar("acc/train", acc, global_step=global_step)
 
       global_step += 1
 
     val_acc = test_model(model, val_data)
-    writer.add_scalar("val_acc", val_acc, global_step=global_step)
+    writer.add_scalar("acc/val", val_acc, global_step=global_step)
 
     lr_scheduler.step()
     writer.flush()
