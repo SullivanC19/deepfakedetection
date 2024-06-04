@@ -1,25 +1,28 @@
 import torch
+import torch.utils.data as dt
 import torchvision
 from PIL import Image
 import torchvision.datasets.utils
 import torchvision.transforms.functional
-from typing import Tuple
 
-from load_data import load_data_info
-from constants import IMAGE_SIZE
+from tqdm import tqdm
+
+from .load_data import load_data_info
+from .constants import IMAGE_SIZE
 
 def compute_mean_and_std(dataset):
-    loader = torch.utils.data.DataLoader(dataset, batch_size=64, shuffle=False)
+    inds = torch.randperm(len(dataset))[:640]
+    dataset = dt.Subset(dataset, inds)
+    loader = dt.DataLoader(dataset, batch_size=64, shuffle=False)
     mean = 0.0
     std = 0.0
     nb_samples = 0.0
 
-    for data in loader:
-        data = data[0]
-        batch_samples = data.size(0)
-        data = data.view(batch_samples, data.size(1), -1)
-        mean += data.mean(2).sum(0)
-        std += data.std(2).sum(0)
+    for (image, _) in tqdm(loader):
+        batch_samples = image.size(0)
+        image = image.view(batch_samples, image.size(1), -1)
+        mean += image.mean(2).sum(0)
+        std += image.std(2).sum(0)
         nb_samples += batch_samples
 
     mean /= nb_samples
@@ -29,7 +32,7 @@ def compute_mean_and_std(dataset):
 
 class FaceImageDataset(torch.utils.data.Dataset):
 
-    def __init__(self, data_type: str, mean: torch.Tensor, std: torch.Tensor, do_augment: bool=False, do_fft: bool=False, mean=None, std=None):
+    def __init__(self, data_type: str, mean: torch.Tensor=0, std: torch.Tensor=1, do_augment: bool=False, do_fft: bool=False):
         self.data_type = data_type
         self.mean = mean
         self.std = std
@@ -68,6 +71,6 @@ class FaceImageDataset(torch.utils.data.Dataset):
         image = preprocess(image)
 
         if self.do_fft:
-            image = torch.fft.fft2(image)
+            image = torch.log(torch.fft.fft2(image))
             
-        return (image, self.image_labels[idx])
+        return (image, torch.tensor(self.image_labels[idx], dtype=torch.float).expand(1))
