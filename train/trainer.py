@@ -8,21 +8,21 @@ from tqdm import tqdm
 from .constants import (
   TRAIN_EPOCHS,
   BATCH_SIZE,
-  SAVED_MODELS_DIR,
   get_timestamp,
   get_saved_model_path,
   get_log_dir,
 )
 
-def train_model(model_name: str, model: nn.Module, train_data: dt.Dataset, val_data: dt.Dataset, criterion: nn.Module):
+def train_model(model_name: str, model: nn.Module, train_data: dt.Dataset, val_data: dt.Dataset):
   timestamp = get_timestamp()
   model_save_path = get_saved_model_path(model_name, timestamp)
   log_dir = get_log_dir(model_name, timestamp)
-  os.makedirs(SAVED_MODELS_DIR, exist_ok=True)
+  os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
   
   writer = SummaryWriter(log_dir=log_dir)
   optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-  dataloader = dt.DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=8)
+  criterion = nn.BCELoss()
+  dataloader = dt.DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=8) # increase num workers
   lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.2)
 
   global_step = 0
