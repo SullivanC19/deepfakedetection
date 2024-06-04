@@ -27,5 +27,5 @@ def cnn_model() -> nn.Module:
            nn.MaxPool2d(kernel_size=4, stride=4),
            Flatten(),
            nn.Linear(256 * (IMAGE_SIZE // 64) ** 2, 1),
-           nn.Sigmoid()
+           nn.Sigmoid(),
         )
