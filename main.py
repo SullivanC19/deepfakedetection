@@ -9,25 +9,6 @@ from models.cnn import cnn_model
 from train.trainer import train_cnn, test_cnn, train_svm, test_svm
 from sklearn.linear_model import SGDClassifier
 
-def compute_mean_and_std(dataset):
-    loader = DataLoader(dataset, batch_size=100, shuffle=False, num_workers=4)
-    mean = 0.0
-    std = 0.0
-    nb_samples = 0.0
-
-    for data in loader:
-        data = data[0]
-        batch_samples = data.size(0)
-        data = data.view(batch_samples, data.size(1), -1)
-        mean += data.mean(2).sum(0)
-        std += data.std(2).sum(0)
-        nb_samples += batch_samples
-
-    mean /= nb_samples
-    std /= nb_samples
-
-    return mean, std
-
 
 def main():
   # Define the path to your data csv 
