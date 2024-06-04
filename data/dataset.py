@@ -10,21 +10,26 @@ from tqdm import tqdm
 from .load_data import load_data_info
 from .constants import IMAGE_SIZE
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 def compute_mean_and_std(dataset):
-    loader = dt.DataLoader(dataset, batch_size=64, shuffle=False)
-    mean = 0.0
-    std = 0.0
-    nb_samples = 0.0
+    loader = dt.DataLoader(dataset, batch_size=64, shuffle=False, num_workers=8)
+    mean = torch.zeros(3)
+    std = torch.zeros(3)
+    num_samples = 0.0
 
     for (image, _) in tqdm(loader):
         batch_samples = image.size(0)
         image = image.view(batch_samples, image.size(1), -1)
         mean += image.mean(2).sum(0)
         std += image.std(2).sum(0)
-        nb_samples += batch_samples
+        num_samples += batch_samples
 
-    mean /= nb_samples
-    std /= nb_samples
+    mean /= num_samples
+    std /= num_samples
+
+    mean = mean.to(device)
+    std = std.to(device)
 
     return mean, std
 
@@ -70,5 +75,8 @@ class FaceImageDataset(torch.utils.data.Dataset):
 
         if self.do_fft:
             image = torch.log(torch.fft.fft2(image))
+
+        image = image.to(device)
+        label = torch.tensor(self.image_labels[idx], dtype=torch.float).expand(1).to(device)
             
-        return (image, torch.tensor(self.image_labels[idx], dtype=torch.float).expand(1))
+        return (image, label)

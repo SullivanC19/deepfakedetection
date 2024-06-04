@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch
 
 from data.dataset import FaceImageDataset, compute_mean_and_std
 from train.trainer import train_model
@@ -7,18 +8,25 @@ from models.cnn import cnn_model
 from models.lin import lin_model
 from models.lcn import lcn_model
 
-# TODO attach tensors to correct device
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 # TODO show svm image in tensorboard
 # TODO use full validation to compute mean and std
 
 def main():
-  model = lin_model()
-  mean, std = compute_mean_and_std(FaceImageDataset('train'))
-  print(f'Mean:\n{mean}\n\nStd:\n{std}')
+  model = cnn_model()
+  model = nn.DataParallel(model).to(device)
+
+  # mean, std = compute_mean_and_std(FaceImageDataset('train'))
+  # print(f'Mean:\n{mean}')
+  # print(f'Std:\n{std}')
+  mean = torch.tensor([0.5212, 0.4263, 0.3810])
+  std = torch.tensor([0.2444, 0.2190, 0.2164])
+
   criterion = nn.BCELoss()
   train_data = FaceImageDataset('train', mean=mean, std=std)
   val_data = FaceImageDataset('valid', mean=mean, std=std)
-  train_model('lin', model, train_data, val_data, criterion)
+  train_model('cnn', model, train_data, val_data, criterion)
 
 
 # def main():
