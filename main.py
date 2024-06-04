@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch
 
+from data.load_data import download_data
 from data.dataset import FaceImageDataset, compute_mean_and_std
 from train.trainer import train_model
 
@@ -9,6 +10,12 @@ from models.lin import lin_model
 from models.lcn import lcn_model
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+print("Device:", device)
+
+print("Loading data...")
+download_data()
+
 
 print("Getting mean and std...")
 

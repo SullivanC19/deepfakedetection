@@ -1,7 +1,5 @@
 # DeepFakesOnly
 
-## Setup
-    conda env create -f environment.yml
-    conda activate deepfakesonly
-    python -m pip install -r requirements.txt
-    python data/load_data.py
+## Setup and Run Training
+    chmod +x ./setup_and_train.sh
+    ./setup_and_train.sh
