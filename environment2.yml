@@ -1,0 +1,9 @@
+name: deepfakesonly2
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - cudatoolkit=10.1
+  - pytorch==1.7.1
+  - torchvision==0.8.2
+prefix: /home/colins26/miniconda3/envs/deepfakesonly2
