@@ -1,7 +1,7 @@
 *.png
 *.jpg
 
-140k-real-and-fake-faces/real-vs-fake/
+140k-real-and-fake-faces/
 **/__pycache__/
 
 logs/**
