@@ -11,7 +11,7 @@
     conda env create -f environment.yml
     conda update -n base conda
     conda activate deepfakesonly
-    python main.py
+    python main.py & tensorboard --logdir=logs --port=6006 && fg
 Enter your Kaggle username and password to download the dataset
 
 ## View Tensorboard Locally
