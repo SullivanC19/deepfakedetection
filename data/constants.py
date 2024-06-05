@@ -8,7 +8,7 @@ URL_DATA = 'https://www.kaggle.com/datasets/xhlulu/140k-real-and-fake-faces'
 LABEL_FAKE = 0
 LABEL_REAL = 1
 
-IMAGE_SIZE = 64
+IMAGE_SIZE = 128
 
 DATA_TYPES = ['train', 'test', 'valid']
 
