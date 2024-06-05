@@ -1,6 +1,6 @@
 from datetime import datetime
 
-TRAIN_EPOCHS = 15
+TRAIN_EPOCHS = 12
 BATCH_SIZE = 64
 SAVED_MODELS_DIR = "saved_models"
 LOGS_DIR = "logs"
