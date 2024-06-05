@@ -15,7 +15,7 @@ from models.lcn import lcn_model
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 print("Device:", device)
-
+exit()
 print("Loading data...")
 if not os.path.exists(DIR_DATA):
   download_data()
