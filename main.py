@@ -29,7 +29,7 @@ def main():
   test_data = CustomDataset(data_folder, test_dataset, transform=transform)
 
   # Create a DataLoader to load the data in batches
-  # batch_size = 1005
+  # batch_size = 128
   # data_loader = DataLoader(custom_dataset, batch_size=batch_size, shuffle=True)
 
   # Iterate over the data loader to access batches of preprocessed images
@@ -54,12 +54,7 @@ def main():
     
     # Optionally, break the loop after processing a few batches
     # if batch_idx == 4:
-      # using batch 5 as dev set (0 indexing)
-      # dev_x = batch[0].to(torch.float32).requires_grad_(True)
-      # dev_y = batch[1].to(torch.float32).requires_grad_(True)
       # break
-
-  # dev_data = TensorDataset(dev_x, dev_y)
 
   print('Starting baseline')
   svm =  SGDClassifier(max_iter=1000, tol=1e-3)
