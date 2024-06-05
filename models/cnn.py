@@ -19,6 +19,6 @@ def cnn_model() -> nn.Module:
            nn.Dropout2d(p=0.2),
            nn.MaxPool2d(kernel_size=4, stride=4),
            Flatten(),
-           nn.Linear(256 * (IMAGE_SIZE // 16) ** 2, 1),
+           nn.Linear(128 * (IMAGE_SIZE // 16) ** 2, 1),
            nn.Sigmoid(),
         )
