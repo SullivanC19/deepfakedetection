@@ -22,7 +22,7 @@ def train_model(model_name: str, model: nn.Module, train_data: dt.Dataset, val_d
   writer = SummaryWriter(log_dir=log_dir)
   optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
   criterion = nn.BCELoss()
-  dataloader = dt.DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=8) # increase num workers
+  dataloader = dt.DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
   lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.2)
 
   last_val_acc = 0
@@ -67,7 +67,7 @@ def train_model(model_name: str, model: nn.Module, train_data: dt.Dataset, val_d
 
 def test_model(model: nn.Module, dataset: dt.Dataset):
   model.eval()
-  dataloader = dt.DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=8)
+  dataloader = dt.DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=False)
   with torch.no_grad():
     acc = 0
     num_samples = 0
