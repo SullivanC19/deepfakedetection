@@ -157,7 +157,11 @@ def plot_cnn_filters():
 
 def plot_image_gradients():
   data = FaceImageDataset('valid', do_fft=False, do_augment=False)
-  base_image, _ = data[0]
+  base_image = None
+  label = None
+  while label != 0:
+    i = np.random.randint(len(data))
+    base_image, label = data[i]
   for spec in MODELS:
     image = torch.clone(base_image).expand(1, 3, IMAGE_SIZE, IMAGE_SIZE)
     image.requires_grad_()
