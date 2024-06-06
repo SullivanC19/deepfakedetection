@@ -1,26 +1,24 @@
 import torch.nn as nn
+from data.constants import IMAGE_SIZE
+from .utils import Flatten
 
-class Flatten(nn.Module):
-    def forward(self, x):
-        N = x.shape[0] # read in N, C, H, W
-        print(x.shape)
-        return x.view(N, -1)  # "flatten" the C * H * W values into a single vector per image
-
-def cnn_model(channels, img_dim):
+def cnn_model() -> nn.Module:
     return nn.Sequential(
-           nn.Conv2d(channels[0], channels[1], kernel_size=7, stride=3, padding=3, padding_mode='zeros', bias=True),
-           nn.BatchNorm2d(channels[1]),
+           nn.Conv2d(3, 32, kernel_size=7, padding=3),
            nn.ReLU(),
-           nn.Conv2d(channels[1], channels[2], kernel_size=7, stride=3, padding=3, padding_mode='zeros', bias=True),
+           nn.Dropout2d(p=0.2),
+           nn.Conv2d(32, 64, kernel_size=3, padding=1),
            nn.ReLU(),
-           nn.MaxPool2d(kernel_size=2, stride=2),
-           nn.Conv2d(channels[2], channels[3], kernel_size=5, stride=2, padding=2, padding_mode='zeros', bias=True),
-           nn.BatchNorm2d(channels[3]),
+           nn.Dropout2d(p=0.2),
+           nn.MaxPool2d(kernel_size=4, stride=4),
+           nn.Conv2d(64, 64, kernel_size=3, padding=1),
            nn.ReLU(),
-           nn.Conv2d(channels[3], channels[4], kernel_size=5, stride=2, padding=2, padding_mode='zeros', bias=True),
+           nn.Dropout2d(p=0.2),
+           nn.Conv2d(64, 128, kernel_size=3, padding=1),
            nn.ReLU(),
-           nn.MaxPool2d(kernel_size=2, stride=2),
+           nn.Dropout2d(p=0.2),
+           nn.MaxPool2d(kernel_size=4, stride=4),
            Flatten(),
-           nn.Linear(channels[4]*img_dim*img_dim, channels[5]),
-           nn.Sigmoid()
+           nn.Linear(128 * (IMAGE_SIZE // 16) ** 2, 1),
+           nn.Sigmoid(),
         )

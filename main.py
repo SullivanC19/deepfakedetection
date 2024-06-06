@@ -1,127 +1,78 @@
-import numpy as np
-import matplotlib.pyplot as plt
+import os
 
-# import torch
-from data.preprocessing import CustomDataset
-# from torch.utils.data import DataLoader
-from torchvision import transforms
+from argparse import ArgumentParser
+
+import torch.nn as nn
+import torch
+
+from data.load_data import download_data, download_wild_data
+from data.dataset import FaceImageDataset, compute_mean_and_std
+from data.constants import DIR_DATA
+from train.trainer import train_model
+
 from models.cnn import cnn_model
-from train.trainer import train_cnn, test_cnn, train_svm, test_svm
-from sklearn.linear_model import SGDClassifier
+from models.lin import lin_model
+from models.lcn import lcn_model
 
-def compute_mean_and_std(dataset):
-    loader = DataLoader(dataset, batch_size=100, shuffle=False, num_workers=4)
-    mean = 0.0
-    std = 0.0
-    nb_samples = 0.0
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    for data in loader:
-        data = data[0]
-        batch_samples = data.size(0)
-        data = data.view(batch_samples, data.size(1), -1)
-        mean += data.mean(2).sum(0)
-        std += data.std(2).sum(0)
-        nb_samples += batch_samples
+print("Device:", device)
 
-    mean /= nb_samples
-    std /= nb_samples
+print("Loading data...")
+if not os.path.exists(DIR_DATA):
+  download_data()
+  download_wild_data()
 
-    return mean, std
+print("Getting mean and std...")
 
+# mean, std = compute_mean_and_std(FaceImageDataset('train'))
+# mean_fft, std_fft = compute_mean_and_std(FaceImageDataset('train', do_fft=True))
+# mean_aug, std_aug = compute_mean_and_std(FaceImageDataset('train', do_augment=True))
+mean = torch.tensor([0.5209, 0.4259, 0.3807])
+std = torch.tensor([0.2399, 0.2145, 0.2120])
+mean_fft = torch.tensor([5.4393, 4.9986, 4.8708])
+std_fft = torch.tensor([36.5962, 30.3230, 27.6568])
+mean_aug = torch.tensor([0.4853, 0.3930, 0.3504])
+std_aug = torch.tensor([0.2594, 0.2264, 0.2155])
+
+print("Mean and std computed")
+print(f"\tMean: {mean}")
+print(f"\tStd: {std}")
+print(f"\tMean FFT: {mean_fft}")
+print(f"\tStd FFT: {std_fft}")
+print(f"\tMean Aug: {mean_aug}")
+print(f"\tStd Aug: {std_aug}")
+
+MODELS = [
+  ('lin', lin_model, False, False, mean, std),
+  ('cnn', cnn_model, False, False, mean, std),
+  ('lcn', lcn_model, False, False, mean, std),
+  ('lin-fft', lin_model, True, False, mean_fft, std_fft),
+  ('cnn-fft', cnn_model, True, False, mean_fft, std_fft),
+  ('lin-aug', lin_model, False, True, mean_aug, std_aug),
+  ('cnn-aug', cnn_model, False, True, mean_aug, std_aug),
+  ('lcn-aug', lcn_model, False, True, mean_aug, std_aug),
+]
 
 def main():
-  # Define the path to your data csv 
-  data_folder = './140k-real-and-fake-faces'
-  train_dataset = 'dev_train.csv'
-  val_dataset = 'dev_valid.csv'
-  test_dataset = 'dev_test.csv'
+  exit()
 
-  dataset = CustomDataset(data_folder, train_dataset) 
-  mean, std = compute_mean_and_std(dataset)
+  parser = ArgumentParser()
+  parser.add_argument('--job_index', '-i', required=True, type=int)
+  args = parser.parse_args()
 
-  # Define the transformations to apply to the images
-  transform = transforms.Compose([
-      transforms.Resize((256, 256)),  # Resize the image to 256x256
-      transforms.ToTensor(),  # Convert PIL image to tensor
-      transforms.Normalize(mean=mean.tolist(), std=std.tolist())  # Normalize image pixels
-     # transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])  # Normalize image pixels
-  ])
+  job_i = args.job_index
+  spec = MODELS[job_i]
+  model_name, f_model, do_fft, do_aug, mean, std = spec
 
-  # Create an instance of your custom dataset
-  train_data = CustomDataset(data_folder, train_dataset, transform=transform)
-  val_data = CustomDataset(data_folder, val_dataset, transform=transform)
-  test_data = CustomDataset(data_folder, test_dataset, transform=transform)
-
-  # Create a DataLoader to load the data in batches
-  # batch_size = 1005
-  # data_loader = DataLoader(custom_dataset, batch_size=batch_size, shuffle=True)
-
-  # Iterate over the data loader to access batches of preprocessed images
-  # for batch_idx, batch in enumerate(data_loader):
-  #   Process each batch as needed
-  #   batch is a tensor of shape (batch_size, channels, height, width)
-  #   For example, you can perform some operations on the batch like printing its shape
-  #   print(f"Batch {batch_idx + 1} shape:", batch[0].shape, len(batch[1]))
-
-  #   # Convert the batch tensor to a NumPy array
-  #   batch_np = batch[0].numpy()
-
-  #   # Iterate over images in the batch
-  #   for i in range(len(batch_np)):
-  #     image_np = np.transpose(batch_np[i], (1, 2, 0))  # Change from (C, H, W) to (H, W, C)
-  #     # Display the image using matplotlib
-  #     plt.imshow(image_np)
-  #     plt.title(f"Batch {batch_idx + 1}, Image {i + 1}")
-  #     plt.axis('off')  # Turn off axis labels
-  #     plt.show()
-  #     print('label: ', batch[1][i])
-    
-  #   Optionally, break the loop after processing a few batches
-  #   if batch_idx == 4:
-  #     using batch 5 as dev set (0 indexing)
-  #     dev_x = batch[0].to(torch.float32).requires_grad_(True)
-  #     dev_y = batch[1].to(torch.float32).requires_grad_(True)
-  #     break
-
-  # dev_data = TensorDataset(dev_x, dev_y)'
-
-
-
-
+  print(f"Starting training of model {model_name}...")
+  model = f_model()
+  model = nn.DataParallel(model).to(device)
+  train_data = FaceImageDataset('train', mean=mean, std=std, do_fft=do_fft, do_augment=do_aug)
+  val_data = FaceImageDataset('valid', mean=mean, std=std, do_fft=do_fft, do_augment=do_aug)
   
-
-  print('Starting baseline')
-  svm =  SGDClassifier(max_iter=1000, tol=1e-3)
-  b_losses, bt_accs, bv_accs = train_svm(svm, train_data, val_data)
-  print('Starting training')
-  channel_dims = [3, 256, 128, 64, 32, 1]
-  model = cnn_model(channel_dims, 2)
-  losses, t_accs, v_accs = train_cnn(model, train_data, val_data)
-  
-  plt.title("SVM Training loss")
-  plt.plot(b_losses)
-  plt.xlabel("Iteration")
-  plt.grid(linestyle='--', linewidth=0.5)
-  plt.show()
-
-  plt.title("CNN Training loss")
-  plt.plot(losses)
-  plt.xlabel("Iteration")
-  plt.grid(linestyle='--', linewidth=0.5)
-  plt.show()
-
-  plt.title("Training accuracy")
-  plt.plot(np.arange(1, len(bt_accs)+1), bt_accs, label='SVM train')
-  plt.plot(np.arange(1, len(bv_accs)+1), bv_accs, label='SVM val')
-  plt.plot(np.arange(1, len(t_accs)+1), t_accs, label='CNN train')
-  plt.plot(np.arange(1, len(v_accs)+1), v_accs, label='CNN val')
-  plt.xlabel("Epoch")
-  plt.grid(linestyle='--', linewidth=0.5)
-  plt.legend(loc='best')
-  plt.show()
-
-  print(f'Baseline SVM test accuracy: {test_svm(svm, test_data)}')
-  print(f'Shallow CNN accuracy: {test_cnn(model, test_data)}')
+  print(f"Training {model_name}...")
+  train_model(model_name, model, train_data, val_data) 
 
 if __name__ == '__main__':
   main()
