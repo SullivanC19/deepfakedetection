@@ -1,7 +1,7 @@
-*.png
-*.jpg
-
 140k-real-and-fake-faces/
+tpdne-60k-128x128/
+celeba-dataset/
+
 **/__pycache__/
 
 logs/**

@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 import torch.nn as nn
 import torch
 
-from data.load_data import download_data
+from data.load_data import download_data, download_wild_data
 from data.dataset import FaceImageDataset, compute_mean_and_std
 from data.constants import DIR_DATA
 from train.trainer import train_model
@@ -21,18 +21,19 @@ print("Device:", device)
 print("Loading data...")
 if not os.path.exists(DIR_DATA):
   download_data()
+  download_wild_data()
 
 print("Getting mean and std...")
 
-mean, std = compute_mean_and_std(FaceImageDataset('train'))
-mean_fft, std_fft = compute_mean_and_std(FaceImageDataset('train', do_fft=True))
-mean_aug, std_aug = compute_mean_and_std(FaceImageDataset('train', do_augment=True))
-# mean = torch.tensor([0.5212, 0.4263, 0.3810])
-# std = torch.tensor([0.2444, 0.2190, 0.2164])
-# mean_fft = torch.tensor([7.7721, 7.2894, 7.1348])
-# std_fft = torch.tensor([73.8876, 61.3502, 56.0426])
-# mean_aug = torch.tensor([0.4852, 0.3929, 0.3501])
-# std_aug = torch.tensor([0.2643, 0.2313, 0.2203])
+# mean, std = compute_mean_and_std(FaceImageDataset('train'))
+# mean_fft, std_fft = compute_mean_and_std(FaceImageDataset('train', do_fft=True))
+# mean_aug, std_aug = compute_mean_and_std(FaceImageDataset('train', do_augment=True))
+mean = torch.tensor([0.5209, 0.4259, 0.3807])
+std = torch.tensor([0.2399, 0.2145, 0.2120])
+mean_fft = torch.tensor([5.4393, 4.9986, 4.8708])
+std_fft = torch.tensor([36.5962, 30.3230, 27.6568])
+mean_aug = torch.tensor([0.4853, 0.3930, 0.3504])
+std_aug = torch.tensor([0.2594, 0.2264, 0.2155])
 
 print("Mean and std computed")
 print(f"\tMean: {mean}")
@@ -54,6 +55,8 @@ MODELS = [
 ]
 
 def main():
+  exit()
+
   parser = ArgumentParser()
   parser.add_argument('--job_index', '-i', required=True, type=int)
   args = parser.parse_args()
