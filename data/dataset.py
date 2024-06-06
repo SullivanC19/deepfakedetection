@@ -36,14 +36,22 @@ def compute_mean_and_std(dataset):
 
 class FaceImageDataset(torch.utils.data.Dataset):
 
-    def __init__(self, data_type: str, mean: torch.Tensor=0, std: torch.Tensor=1, do_augment: bool=False, do_fft: bool=False):
+    def __init__(
+            self,
+            data_type: str,
+            mean: torch.Tensor=0,
+            std: torch.Tensor=1,
+            do_augment: bool=False,
+            do_fft: bool=False,
+            source: str='local'):
         self.data_type = data_type
         self.mean = mean
         self.std = std
         self.do_augment = do_augment
         self.do_fft = do_fft
+        self.source = source
 
-        image_info = load_data_info(data_type)
+        image_info = load_data_info(data_type, source)
         self.image_files = image_info['image'].values
         self.image_labels = image_info['label'].values
 
