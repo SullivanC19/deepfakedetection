@@ -7,5 +7,3 @@ celeba-dataset/
 logs/**
 logs_old/
 logs_old/**
-
-analyze.py
