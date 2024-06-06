@@ -5,6 +5,7 @@
 **/__pycache__/
 
 logs/**
-saved_models/*
+logs_old/
+logs_old/**
 
 analyze.py
