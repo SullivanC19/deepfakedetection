@@ -3,18 +3,22 @@ from models.cnn import cnn_model
 from models.lin import lin_model
 from models.lcn import lcn_model
 
-# TODO get most recent models
+import os
+SAVED_MODEL_DIR = 'saved_models'
+
+def get_most_recent_model(model):
+  return f'{SAVED_MODEL_DIR}/{model}/{sorted(os.listdir(f"{SAVED_MODEL_DIR}/{model}"))[-1]}'
 
 LIN_MODELS = [
-  ('lin', 'saved_models/lin/2024-06-04_23-12-26.pt'),
-  ('lin-aug', 'saved_models/lin-aug/2024-06-04_23-12-37.pt'),
-  ('lin-fft', 'saved_models/lin-fft/2024-06-04_23-11-52.pt'),
+  ('lin', get_most_recent_model('lin')),
+  ('lin-aug', get_most_recent_model('lin-aug')),
+  ('lin-fft', get_most_recent_model('lin-fft')),
 ]
 
 CNN_MODELS = [
-  ('cnn', 'saved_models/cnn/2024-06-04_23-12-26.pt'),
-  ('cnn-aug', 'saved_models/cnn-aug/2024-06-04_23-12-37.pt'),
-  ('cnn-fft', 'saved_models/cnn-fft/2024-06-04_23-12-37.pt'),
+  ('cnn', get_most_recent_model('cnn')),
+  ('cnn-aug', get_most_recent_model('cnn-aug')),
+  ('cnn-fft', get_most_recent_model('cnn-fft')),
 ]
 
 DATASET_SPECS = [
