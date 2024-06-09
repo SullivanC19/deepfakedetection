@@ -5,5 +5,4 @@ celeba-dataset/
 **/__pycache__/
 
 logs/**
-logs_old/
-logs_old/**
+saved_models/**
