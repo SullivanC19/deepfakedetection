@@ -6,3 +6,4 @@ celeba-dataset/
 
 logs/**
 saved_models/**
+plots/**
