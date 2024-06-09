@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.nn as nn
 from torchvision import utils
@@ -5,33 +6,18 @@ import numpy as np
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+import cv2
 
-from models.lin import lin_model
-from models.cnn import cnn_model
-from main import MODELS
-from train.trainer import test_model
-import cv2 # TODO import
-
+from constants import SPECS
 from data.constants import IMAGE_SIZE
 from data.dataset import FaceImageDataset
+from models.lin import lin_model
+from models.cnn import cnn_model
+from train.trainer import test_model
 
-LIN_MODELS = [
-  ('lin', 'saved_models/lin/2024-06-04_23-12-26.pt'),
-  ('lin-aug', 'saved_models/lin-aug/2024-06-04_23-12-37.pt'),
-  ('lin-fft', 'saved_models/lin-fft/2024-06-04_23-11-52.pt'),
-]
+from constants import LIN_MODELS, CNN_MODELS, DATASET_SPECS
 
-CNN_MODELS = [
-  ('cnn', 'saved_models/cnn/2024-06-04_23-12-26.pt'),
-  ('cnn-aug', 'saved_models/cnn-aug/2024-06-04_23-12-37.pt'),
-  ('cnn-fft', 'saved_models/cnn-fft/2024-06-04_23-12-37.pt'),
-]
-
-DATASET_SPECS = [
-  ('normal', 'train', 0, 1, False, False),
-  ('aug', 'train', 0, 1, True, False),
-  ('fft', 'train', 0, 1, False, True),
-]
+np.random.seed(0)
 
 def sigmoid(z):
     return 1/(1 + np.exp(-z))
@@ -95,7 +81,7 @@ def plot_lin_weights():
 def evaluate_models():
   df = pd.DataFrame(columns=['model', 'accuracy'])
   for source in ['local', 'tpdne', 'celeba']:
-    for spec in MODELS:
+    for spec in SPECS:
       model_name, f_model, do_fft, _, mean, std = spec
       print(f"Evaluating model {model_name} on dataset {source}...")
       data = FaceImageDataset('test', source=source, do_fft=do_fft, do_augment=False, mean=mean, std=std)
@@ -121,9 +107,9 @@ def plot_acc():
 
     models = df['group'].unique()
 
-    fig, ax = plt.subplots(layout='constrained')
+    _, ax = plt.subplots(layout='constrained')
     for row in df.iterrows():
-      i, row = row
+      _, row = row
       x = list(models).index(row['group']) * 3 + row['aug'] + 0.5 * row['fft']
       ax.bar(x, row['accuracy'], color='g' if row['fft'] else ('r' if row['aug'] else 'b'))
     ax.set_ylabel('Accuracy')
@@ -162,10 +148,10 @@ def plot_image_gradients():
   while label != 0:
     i = np.random.randint(len(data))
     base_image, label = data[i]
-  for spec in MODELS:
+  for spec in SPECS:
     image = torch.clone(base_image).expand(1, 3, IMAGE_SIZE, IMAGE_SIZE)
     image.requires_grad_()
-    model_name, f_model, do_fft, _, mean, std = spec
+    model_name, f_model, do_fft, _, _, _ = spec
     if do_fft:
       continue
     model = f_model()
@@ -179,14 +165,14 @@ def plot_image_gradients():
     grad = torch.autograd.grad(out, image, create_graph=True)[0][0]
     grad = torch.abs(grad.detach())
     plot_image(tensor_to_image(grad * 50), f'plots/image-gradients/{model_name}.png')
-  plot_image(tensor_to_image(base_image), f'plots/image-gradients/base.png')
+  plot_image(tensor_to_image(base_image), 'plots/image-gradients/base.png')
 
 def analyze():
-  # plot_lin_weights()
-  # plot_sample_images()
-  # evaluate_models()
-  # plot_acc()
-  # plot_cnn_filters()
+  plot_lin_weights()
+  plot_sample_images()
+  evaluate_models()
+  plot_acc()
+  plot_cnn_filters()
   plot_image_gradients()
 
 if __name__ == '__main__':
