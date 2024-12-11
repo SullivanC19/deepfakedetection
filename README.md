@@ -1,4 +1,4 @@
-# DeepFakesOnly
+# DeepFakeDetction
 
 Hi CS231N TAs! Thank you for taking the time to evaluate our project. Please follow the instructions below to replicate the results from our final report and poster presentation.
 
